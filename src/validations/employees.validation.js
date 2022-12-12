@@ -1,22 +1,21 @@
 const Joi = require('joi');
 const { password, objectId } = require('./custom.validation');
 
-const createUser = {
+const createEmployee = {
   body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required().custom(password),
     name: Joi.string().required(),
-    role: Joi.string().required().valid('user', 'admin'),
+    salary: Joi.number().required(),
+    currency: Joi.string().required().valid('USD', 'INR', 'EUR'),
+    department: Joi.string().required(),
+    sub_department: Joi.string().required(),
+    on_contract: Joi.boolean().required(),
   }),
 };
 
-const getUsers = {
+const getEmployeesSS = {
   query: Joi.object().keys({
-    name: Joi.string(),
-    role: Joi.string(),
-    sortBy: Joi.string(),
-    limit: Joi.number().integer(),
-    page: Joi.number().integer(),
+    currency: Joi.string().valid('USD', 'INR', 'EUR'),
+    on_contract: Joi.boolean(),
   }),
 };
 
@@ -39,16 +38,16 @@ const updateUser = {
     .min(1),
 };
 
-const deleteUser = {
+const deleteEmployee = {
   params: Joi.object().keys({
-    userId: Joi.string().custom(objectId),
+    name: Joi.string().required(),
   }),
 };
 
 module.exports = {
-  createUser,
-  getUsers,
+  createEmployee,
   getUser,
   updateUser,
-  deleteUser,
+  getEmployeesSS,
+  deleteEmployee,
 };

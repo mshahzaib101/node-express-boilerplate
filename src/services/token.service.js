@@ -6,6 +6,7 @@ const userService = require('./user.service');
 const { Token } = require('../models');
 const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
+const { tokensDB, addToken } = require('../inMemoryDatabase/users');
 
 /**
  * Generate token
@@ -53,11 +54,22 @@ const saveToken = async (token, userId, expires, type, blacklisted = false) => {
  */
 const verifyToken = async (token, type) => {
   const payload = jwt.verify(token, config.jwt.secret);
-  const tokenDoc = await Token.findOne({ token, type, user: payload.sub, blacklisted: false });
-  if (!tokenDoc) {
+  console.log('payload', payload, payload.sub);
+
+  if (type === 'refresh' && payload && payload.sub) {
+    let tokenIndex = tokensDB.findIndex((x) => x.token === token && x.user === payload.sub);
+    if (tokenIndex === -1) {
+      throw new Error('Token not found');
+    }
+    return { ...tokensDB[tokenIndex], index: tokenIndex };
+  } else {
     throw new Error('Token not found');
   }
-  return tokenDoc;
+  // const tokenDoc = await Token.findOne({ token, type, user: payload.sub, blacklisted: false });
+  // if (!tokenDoc) {
+  //   throw new Error('Token not found');
+  // }
+  // return tokenDoc;
 };
 
 /**
@@ -70,8 +82,18 @@ const generateAuthTokens = async (user) => {
   const accessToken = generateToken(user.id, accessTokenExpires, tokenTypes.ACCESS);
 
   const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
+
   const refreshToken = generateToken(user.id, refreshTokenExpires, tokenTypes.REFRESH);
-  await saveToken(refreshToken, user.id, refreshTokenExpires, tokenTypes.REFRESH);
+
+  // await saveToken(refreshToken, user.id, refreshTokenExpires, tokenTypes.REFRESH);
+
+  addToken({
+    token: refreshToken,
+    user: user.id,
+    expires: refreshTokenExpires.toDate(),
+    type: tokenTypes.REFRESH,
+    blacklisted: false,
+  });
 
   return {
     access: {
