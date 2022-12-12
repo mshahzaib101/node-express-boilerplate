@@ -20,6 +20,10 @@ yarn docker:dev
 
 ```
 
+## API Documentation
+
+To view the list of available APIs and their specifications, run the server and go to `http://localhost:3000/v1/docs` in your browser. You can test the apis on this route.(I have added swagger)
+
 ## Environment Variables
 
 ```bash
@@ -52,7 +56,3 @@ src\
  |--app.js          # Express app
  |--index.js        # App entry point
 ```
-
-## API Documentation
-
-To view the list of available APIs and their specifications, run the server and go to `http://localhost:3000/v1/docs` in your browser.
